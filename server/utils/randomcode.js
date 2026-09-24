@@ -1,7 +1,9 @@
+
 export function randomCode(){
 
     const word = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
-
+    
+    
     let random=''
 
     for(let index = 0; index <6; index++) {
@@ -9,10 +11,18 @@ export function randomCode(){
     }
     return random
     
-
+    
 }
 
 // console.log(randomCode());
+
+
+export function randomDie(){
+
+    return Math.floor(Math.random()*6+1)
+}
+
+// console.log(randomDie());
 
 
 

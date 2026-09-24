@@ -1,3 +1,4 @@
+import { randomCode } from "./utils/randomcode.js";
 
 const rooms = new Map()
 
@@ -16,6 +17,11 @@ export function isSocketInRoom(socketId) {
     return socketToRoom.has(socketId)
 }
 
+
+export function isRoomExists(romId){
+    return rooms.has(romId)
+}
+ 
 
 
 export function getRoomBySocketId(socketId) {
@@ -40,18 +46,25 @@ export function createRoom(roomCode, socketId, playerName) {
     }
 
     rooms.set(roomCode, newRoom)
-    socketToRoom(socketId, roomCode)
+    socketToRoom.set(socketId, roomCode)
     return newRoom
 }
 
 
 
 export function joinRoom(roomCode, socketId, playerName) {
+    if (!roomCode || typeof roomCode !== 'string') {
+    return { error: 'invalid room code' }
+}
+    if (!validatePlayerName(playerName)) {
+        return { error: 'invalid name' }
+    }
     const cleanCode = roomCode.trim().toUpperCase()
     const room = rooms.get(cleanCode)
     if (!room) {
         return { error: 'code not found' }
     }
+
     if (room.status !== 'waiting' || room.players.length >= 2) {
         return { error: 'full room the game alrredy starts' }
     }
@@ -62,7 +75,7 @@ export function joinRoom(roomCode, socketId, playerName) {
     })
 
     socketToRoom.set(socketId, cleanCode);
-    return { room }
+    return { room,cleanCode }
 }
 
 

@@ -87,18 +87,18 @@ function canBearOff(board, bar, color) {
 
 
 
-// const rooms = new Map()
+const rooms = new Map()
 
-// rooms.set("ABC234",
-//   {status: "waiting", // waiting | playing | finished
-//   ownerSocketId: "socket-1",
-//   players: [
-//     { socketId: "socket-1", name: "Dana", color: "white" }
-//   ],
-//   game: null,
-//   rematchAcceptedBy: []
-// }
-// )
+rooms.set("ABC234",
+  {id:"ABC234",status: "waiting", // waiting | playing | finished
+  ownerSocketId: "socket-1",
+  players: [
+    { socketId: "socket-1", name: "Dana", color: "white" }
+  ],
+  game: null,
+  rematchAcceptedBy: []
+}
+)
 
 
-// console.log(rooms.get('ABC234').players);
+console.log(rooms.has('ABC234'));
