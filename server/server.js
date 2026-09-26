@@ -2,8 +2,10 @@ import express from 'express'
 import cors from 'cors'
 import { createServer } from 'http'
 import { Server } from 'socket.io'
-import { randomCode } from './utils/randomcode.js'
+import { randomCode,randomDie } from './utils/randomcode.js'
 import { isSocketInRoom, createRoom, deleteRoom, getRoomBySocketId, joinRoom, validatePlayerName, isRoomExists } from './roomMennager.js'
+import { createInitialGame,getLegalMoves,applyMove } from './utils/gameLogic.js'
+
 
 
 
@@ -64,6 +66,10 @@ io.on('connect', (socket) => {
 
         socket.join(cleanCode)
 
+
+        room.status = 'playing'
+        room.game = createInitialGame()
+
         const publicRoomState = {
         id: room.id,
         status: room.status,
@@ -78,9 +84,63 @@ io.on('connect', (socket) => {
     })
 
     io.to(cleanCode).emit('room:state', publicRoomState)
+    io.to(cleanCode).emit('game:start', { game: room.game })
 
     console.log(`player:${socket.id} joined room ${cleanCode}`)
     })
+    socket.on('game:rollDice', (_, callback) => {
+        const room = getRoomBySocketId(socket.id)
+        if (!room || !room.game) {
+            return callback?.({ error: 'game not found' })
+        }
+
+        const game = room.game
+
+       
+        const player = room.players.find(p => p.socketId === socket.id)
+        if (!player) {
+            return callback?.({ error: 'player not in room' })
+        }
+
+     
+        if (game.currentPlayer !== player.color) {
+            return callback?.({ error: 'not your turn' })
+        }
+
+      
+        if (game.hasRolled) {
+            return callback?.({ error: 'already rolled dice this turn' })
+        }
+
+     
+        const die1 = randomDie()
+        const die2 = randomDie()
+        game.dice = [die1, die2]
+        game.hasRolled = true
+
+    
+        if (die1 === die2) {
+            game.remainingDice = [die1, die1, die1, die1]
+        } else {
+            game.remainingDice = [die1, die2]
+        }
+
+
+        const legalMoves = getLegalMoves(game)
+
+        callback?.({ success: true, dice: game.dice, legalMoves })
+
+
+        io.to(room.id).emit('game:diceRolled', {
+            dice: game.dice,
+            currentPlayer: game.currentPlayer,
+            remainingDice: game.remainingDice
+        })
+
+        console.log(`Room ${room.id}: ${player.name} (${player.color}) rolled [${game.dice}]`)
+    })
+
+
 })
 
 
